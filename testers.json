@@ -530,7 +530,7 @@
     },
     "syntax›destructuring, parameters›duplicate identifier": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-destructuring-assignment",
-      "code": "var d = function d([d]) { return d };\nif (d([true]) !== true) return false;\n\ntry {\n  eval('var f = function f([id, id]) { return id }');\n  return false;\n} catch (e) {\n  return e instanceof SyntaxError;\n}"
+      "code": "try {\n  eval('var d = function d([d]) { return d };if (d([true]) !== true) return false;');\n} catch (e) {\n  return !(e instanceof SyntaxError);\n}\n\ntry {\n  eval('var f = function f([id, id]) { return id }');\n  return false;\n} catch (e) {\n  return e instanceof SyntaxError;\n}"
     },
     "syntax›Unicode code point escapes›in strings": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-literals-string-literals",
@@ -1712,9 +1712,13 @@
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-well-known-symbols",
       "code": "var passed = false;\nvar obj = { foo: true };\nvar C = function(){};\nObject.defineProperty(C, Symbol.hasInstance, {\n  value: function(inst) { passed = inst.foo; return false; }\n});\nobj instanceof C;\nreturn passed;"
     },
-    "built-ins›well-known symbols›Symbol.isConcatSpreadable": {
+    "built-ins›well-known symbols›Symbol.isConcatSpreadable, non-spreadable array": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-well-known-symbols",
       "code": "var a = [], b = [];\nb[Symbol.isConcatSpreadable] = false;\na = a.concat(b);\nreturn a[0] === b;"
+    },
+    "built-ins›well-known symbols›Symbol.isConcatSpreadable, spreadable object with poisoned getter": {
+      "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-well-known-symbols",
+      "code": "if (typeof Symbol !== 'function' || !Symbol.isConcatSpreadable) {\n  return null;\n}\nvar spreadableHasPoisonedIndex = { length: Math.pow(2, 53) - 1 };\nspreadableHasPoisonedIndex[Symbol.isConcatSpreadable] = true;\nObject.defineProperty(spreadableHasPoisonedIndex, 0, {\n  get: function () { throw new SyntaxError(); }\n});\ntry {\n  [].concat(spreadableHasPoisonedIndex);\n  return false;\n} catch (e) {\n  return !!e && e.name === 'SyntaxError';\n}"
     },
     "built-ins›well-known symbols›Symbol.iterator, existence": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-well-known-symbols",
@@ -2040,6 +2044,10 @@
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-array-prototype-object",
       "code": "return typeof Array.prototype.entries === 'function';"
     },
+    "built-in extensions›Array.prototype methods›Array.prototype.splice": {
+      "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-array-prototype-object",
+      "code": "if ([0, 1, 2].splice(0).length !== 3) {\n  // IE <= 8 and other pre-ES6 engines fail this check\n  return false;\n}\n\nvar a = [1, 2];\nvar result = a.splice();\nif (a.length !== 2 || result.length !== 0) {\n  // Safari 5.0 has this bug\n  return false;\n}\n\nvar obj = {};\nArray.prototype.splice.call(obj, 0, 0, 1);\nif (obj.length !== 1) {\n  return false;\n}\n\nvar spliceWorksWithLargeSparseArrays = (function () {\n  // Per https://github.com/es-shims/es5-shim/issues/295\n  // Safari 7/8 breaks with sparse arrays of size 1e5 or greater\n  var arr = new Array(1e5);\n  // note: the index MUST be 8 or larger or the test will false pass\n  arr[8] = 'x';\n  arr.splice(1, 1);\n  for (var i = 0; i < arr.length; i += 1) {\n    if (arr[i] === 'x') {\n      return i === 7;\n    }\n  }\n  return false;\n}());\nvar spliceWorksWithSmallSparseArrays = (function () {\n  // Per https://github.com/es-shims/es5-shim/issues/295\n  // Opera 12.15 breaks on this, no idea why.\n  var n = 256;\n  var arr = [];\n  arr[n] = 'a';\n  arr.splice(n + 1, 0, 'b');\n  return arr[n] === 'a';\n}());\n\nreturn spliceWorksWithLargeSparseArrays && spliceWorksWithSmallSparseArrays;"
+    },
     "built-in extensions›Array.prototype methods›Array.prototype[Symbol.iterator]": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-array-prototype-object",
       "code": "return typeof Array.prototype[Symbol.iterator] === 'function';"
@@ -2362,7 +2370,7 @@
     },
     "misc›Proxy, internal 'get' calls›RegExp.prototype.flags": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots",
-      "code": "// RegExp.prototype.flags -> Get -> [[Get]]\nvar expected = [];\n// Sorted alphabetically by shortname – \"gumsuy\".\nif ('global' in RegExp.prototype) expected.push('global');\nif ('ignoreCase' in RegExp.prototype) expected.push('ignoreCase');\nif ('multiline' in RegExp.prototype) expected.push('multiline');\nif ('dotAll' in RegExp.prototype) expected.push('dotAll');\nif ('unicode' in RegExp.prototype) expected.push('unicode');\nif ('sticky' in RegExp.prototype) expected.push('sticky');\nvar actual = [];\nvar p = new Proxy({}, { get: function(o, k) { actual.push(k); return o[k]; }});\nObject.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get.call(p);\nif (expected.length !== actual.length) return false;\nfor (var i = 0; i < expected.length; i++) {\n  if (expected[i] !== actual[i]) return false;\n}\nreturn true;"
+      "code": "// RegExp.prototype.flags -> Get -> [[Get]]\nvar expected = [];\n// Sorted alphabetically by shortname – \"gimsuy\".\nif ('global' in RegExp.prototype) expected.push('global');\nif ('ignoreCase' in RegExp.prototype) expected.push('ignoreCase');\nif ('multiline' in RegExp.prototype) expected.push('multiline');\nif ('dotAll' in RegExp.prototype) expected.push('dotAll');\nif ('unicode' in RegExp.prototype) expected.push('unicode');\nif ('sticky' in RegExp.prototype) expected.push('sticky');\nvar actual = [];\nvar p = new Proxy({}, { get: function(o, k) { actual.push(k); return o[k]; }});\nObject.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get.call(p);\nif (expected.length !== actual.length) return false;\nfor (var i = 0; i < expected.length; i++) {\n  if (expected[i] !== actual[i]) return false;\n}\nreturn true;"
     },
     "misc›Proxy, internal 'get' calls›RegExp.prototype.test": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots",
@@ -2796,7 +2804,11 @@
     },
     "features›Array.prototype.includes›Array.prototype.includes": {
       "spec": "http://www.ecma-international.org/ecma-262/7.0/index.html#sec-array.prototype.includes",
-      "code": "return [1, 2, 3].includes(1)\n&& ![1, 2, 3].includes(4)\n&& ![1, 2, 3].includes(1, 1)\n&& [NaN].includes(NaN)\n&& Array(1).includes();"
+      "code": "return [1, 2, 3].includes(1)\n&& ![1, 2, 3].includes(4)\n&& ![1, 2, 3].includes(1, 1)\n&& [NaN].includes(NaN);"
+    },
+    "features›Array.prototype.includes›Array.prototype.includes handles sparse arrays": {
+      "spec": "http://www.ecma-international.org/ecma-262/7.0/index.html#sec-array.prototype.includes",
+      "code": "return [,].includes()\n && Array(1).includes();"
     },
     "features›Array.prototype.includes›Array.prototype.includes is generic": {
       "spec": "http://www.ecma-international.org/ecma-262/7.0/index.html#sec-array.prototype.includes",
@@ -2878,7 +2890,7 @@
     },
     "features›async functions›no line break between async and function": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
-      "code": "async function a(){}\ntry { Function(\"async\\n function a(){}\")(); } catch(e) { return true; }"
+      "code": "async function a(){}\ntry { Function(\"async\\n function a(){await 0}\")(); } catch(e) { return true; }"
     },
     "features›async functions›no \"prototype\" property": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
@@ -2962,8 +2974,8 @@
     "features›shared memory and atomics›Atomics.wait": {
       "code": "return typeof Atomics.wait === 'function';"
     },
-    "features›shared memory and atomics›Atomics.wake": {
-      "code": "return typeof Atomics.wake === 'function';"
+    "features›shared memory and atomics›Atomics.notify": {
+      "code": "return typeof Atomics.notify === 'function';"
     },
     "features›shared memory and atomics›Atomics.isLockFree": {
       "code": "return typeof Atomics.isLockFree === 'function';"
@@ -3109,9 +3121,37 @@
       "spec": "https://github.com/tc39/proposal-regexp-lookbehind",
       "code": "return /(?<=a)b/.test('ab') && /(?<!a)b/.test('cb') &&\n       !/(?<=a)b/.test('b');"
     },
-    "features›RegExp Unicode Property Escapes": {
+    "features›RegExp Unicode Property Escapes›basic": {
       "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
       "code": "const regexGreekSymbol = /\\p{Script=Greek}/u;\nreturn regexGreekSymbol.test('π');"
+    },
+    "features›RegExp Unicode Property Escapes›Unicode 11": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Extended_Pictographic}/u.test(\"\\xA9\") && /\\p{Emoji}/u.test(\"🥰\");"
+    },
+    "features›RegExp Unicode Property Escapes›Unicode 12": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Script=Elymaic}/u.test(\"\\u{10fe0}\") && /\\p{Emoji}/u.test(\"🥱\");"
+    },
+    "features›RegExp Unicode Property Escapes›Unicode 12.1": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Other_Symbol}/u.test(\"\\u32FF\");"
+    },
+    "features›RegExp Unicode Property Escapes›Unicode 13": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Script=Chorasmian}/u.test(\"\\u{10fb0}\") && /\\p{Emoji}/u.test(\"🥲\");"
+    },
+    "features›RegExp Unicode Property Escapes›Unicode 14": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Script=Vithkuqi}/u.test(\"\\u{10570}\") && /\\p{Emoji}/u.test(\"🫠\");"
+    },
+    "features›RegExp Unicode Property Escapes›Unicode 15": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Script=Kawi}/u.test(\"\\u{11f00}\") && /\\p{Emoji}/u.test(\"🫨\");"
+    },
+    "features›RegExp Unicode Property Escapes›Unicode 15.1": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Unified_Ideograph}/u.test(\"\\u{2ebf0}\");"
     },
     "features›Asynchronous Iterators›async generators": {
       "spec": "https://github.com/tc39/proposal-async-iteration",
@@ -3307,9 +3347,9 @@
     }
   },
   "ESNEXT": {
-    "Stage 3›Realms": {
-      "spec": "https://github.com/tc39/proposal-realms",
-      "code": "return typeof Realm === \"function\"\n  && [\"eval\", \"global\", \"intrinsics\", \"stdlib\", \"directEval\", \"indirectEval\", \"initGlobal\", \"nonEval\"].every(function(key){\n    return key in Realm.prototype;\n  });"
+    "Stage 3›ShadowRealm": {
+      "spec": "https://github.com/tc39/proposal-shadowrealm",
+      "code": "return typeof ShadowRealm === \"function\"\n  && [\"evaluate\", \"importValue\"].every(function(key){\n    return key in ShadowRealm.prototype;\n  });"
     },
     "Stage 3›Legacy RegExp features in JavaScript›RegExp \"lastMatch\"": {
       "spec": "https://github.com/tc39/proposal-regexp-legacy-features",
@@ -3318,18 +3358,6 @@
     "Stage 3›Legacy RegExp features in JavaScript›RegExp.$1-$9": {
       "spec": "https://github.com/tc39/proposal-regexp-legacy-features",
       "code": "for (var i = 1; i < 10; i++) {\n  if (!(('$' + i) in RegExp)) return false;\n}\nreturn true;"
-    },
-    "Stage 3›Hashbang Grammar": {
-      "spec": "https://github.com/tc39/proposal-hashbang/",
-      "code": "try {\n  return !eval('#!/wash/your/hands');\n} catch (e) {\n  return false\n}"
-    },
-    "Stage 3›Array find from last›Array.prototype.findLast": {
-      "spec": "https://github.com/tc39/proposal-array-find-from-last",
-      "code": "var arr = [{ x: 1 }, { x: 2 }, { x: 1 }, { x: 2 }];\nreturn arr.findLast(function (o) { return o.x === 1; }) === arr[2];"
-    },
-    "Stage 3›Array find from last›Array.prototype.findLastIndex": {
-      "spec": "https://github.com/tc39/proposal-array-find-from-last",
-      "code": "var arr = [{ x: 1 }, { x: 2 }, { x: 1 }, { x: 2 }];\nreturn arr.findLastIndex(function (o) { return o.x === 1; }) === 2;"
     },
     "Stage 2›Generator function.sent Meta Property": {
       "spec": "https://github.com/tc39/proposal-function.sent",
@@ -3401,7 +3429,7 @@
     },
     "Stage 2›Array.isTemplateObject": {
       "spec": "https://github.com/tc39/proposal-array-is-template-object",
-      "code": "return !Array.isTemplateObject([])\n  && Array.isTemplateObject((it => it)`a{1}c`);"
+      "code": "return !Array.isTemplateObject([])\n  && Array.isTemplateObject((it => it)`a${1}c`);"
     },
     "Stage 2›Iterator Helpers›instanceof Iterator": {
       "spec": "https://github.com/tc39/proposal-iterator-helpers",

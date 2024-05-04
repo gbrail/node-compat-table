@@ -7,4 +7,5 @@ module.exports = {
   '1.7.12': { flagged: true },
   '1.7.13': { flagged: true },
   '1.7.14': { flagged: true },
+  '1.7.15': { flagged: true },
 };
