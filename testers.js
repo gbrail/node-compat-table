@@ -1,35 +1,18 @@
-// this files patches the 2 `tests-xx.json` files together in 1 object organized by ES version
+// this files patches the `tests-xx.json` files together in 1 object organized by ES version
 
 var testers = {
-  ES2015: require('./testers-es6.json'),
-  ES2016: {},
-  ES2017: {},
-  ES2018: {},
-  ES2019: {},
-  ES2020: {},
-  ESNEXT:  require('./testers-esnext.json')
+  ES2015: require('./testers-es6.json')
 }
 
 var esnext = require('./testers-es2016plus.json')
 Object.keys(esnext).forEach((key) => {
-  if (/^2016/.test(key)) {
-    testers.ES2016[key.substr(5)] = esnext[key]
-  }
-
-  if (/^2017/.test(key)) {
-    testers.ES2017[key.substr(5)] = esnext[key]
-  }
-
-  if (/^2018/.test(key)) {
-    testers.ES2018[key.substr(5)] = esnext[key]
-  }
-
-  if (/^2019/.test(key)) {
-    testers.ES2019[key.substr(5)] = esnext[key]
-  }
-
-  if (/^2020/.test(key)) {
-    testers.ES2020[key.substr(5)] = esnext[key]
+  var year = key.substr(0,4)
+  if (/20\d\d/.test(year)) {
+    var group = testers['ES'+year] || (testers['ES'+year] = testers['ES'+year] = {})
+    group[key.substr(5)] = esnext[key]
   }
 })
+
+testers.ESNEXT = require('./testers-esnext.json')
+
 console.log(JSON.stringify(testers, null, 2))

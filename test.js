@@ -10,7 +10,9 @@ if (esStaging) version += '--es_staging'
 var harmony = /--harmony/.test(process.execArgv) ? '--harmony' : ''
 if (harmony) version += '--harmony'
 
-var silencer = error => console.log('test had an unhandled rejected promise');
+function silencer() {
+  console.log('test had an unhandled rejected promise');
+}
 process.addListener('unhandledRejection', silencer);
 
 console.log('Testing ' + version)

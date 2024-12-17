@@ -39,7 +39,7 @@ $ node build.js
 column will be empty (all white cells- no text).
 
 ## How tests are run
-A scheduled task runs on Heroku runs `bash test.sh` once a day, which saves the results to the `/results` directory, rebuilds the webpage.
+A scheduled task runs on GitHub Actions runs `bash test.sh` once a day, which saves the results to the `/results` directory, rebuilds the webpage.
 
 It then push the changes to the GitHub repo when complete.
 

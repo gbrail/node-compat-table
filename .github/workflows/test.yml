@@ -1,0 +1,45 @@
+name: Test and update
+
+on:
+  schedule:
+    - cron: "37 6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    if: github.repository == 'williamkapke/node-compat-table'
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ljharb/actions/node/install@main
+
+      - run: |
+          . $NVM_DIR/nvm.sh
+          echo "path=$(nvm cache dir)" >> "$GITHUB_OUTPUT"
+        id: nvm-path
+
+      - name: Restore nvm cache
+        uses: actions/cache/restore@v3
+        id: cache-nvm-restore
+        with:
+          path: ${{ steps.nvm-path.outputs.path }}
+          key: ${{ runner.os }}-nvm-${{ hashFiles('v8.versions') }}
+          restore-keys: ${{ runner.os }}-nvm-
+
+      - run: bash test.sh
+
+      # Remove nightlies so that the cache doesn't infinitely grow.
+      - run: rm -rf ${{ steps.nvm-path.outputs.path }}/*/*nightly*
+
+      - name: Save nvm cache
+        uses: actions/cache/save@v3
+        with:
+          path: ${{ steps.nvm-path.outputs.path }}
+          key: ${{ runner.os }}-nvm-${{ hashFiles('v8.versions') }}
