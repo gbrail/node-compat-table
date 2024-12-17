@@ -9,7 +9,7 @@
 # 4) Edit "rhinoversions.js" to add your new version to the list
 # 5) Run this script!
 
-rhinoJar=~/src/rhino/buildGradle/libs/rhino-1.7.15-SNAPSHOT.jar
+rhinoJar=~/src/rhino/rhino-all/build/libs/rhino-all-1.7.16-SNAPSHOT.jar
 rhinoVersion=1.7.14
 supportVersion=14
 
