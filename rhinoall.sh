@@ -29,8 +29,8 @@ runTests() {
   else
     echo "supportVersion=${supportVersion}; load('obsoleterhinotest.js');" > tmptest.$$
   fi
-  java -jar ${jar} -version 0 tmptest.$$ > rhino-results/${version}.json
-  if [ ${supportVersion} -gt 5 ]
+  java -jar ${jar} tmptest.$$ > rhino-results/${version}.json
+  if [ ${supportVersion} -gt 5 -a ${supportVersion} -lt 20 ]
   then
     echo "Testing ${version} -version 200"
     java -jar ${jar} -version 200 tmptest.$$ > rhino-results/${version}-es6.json
@@ -62,7 +62,7 @@ fetchAndRunUrl 1.7.13 13 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.13
 fetchAndRunUrl 1.7.14 14 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.14/rhino-1.7.14.jar
 fetchAndRunUrl 1.7.15 15 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.15/rhino-1.7.15.jar
 
-runTests 1.7.16 16 ~/src/rhino/rhino-all/build/libs/rhino-all-1.7.16-SNAPSHOT.jar
+runTests 1.8.0 20 ~/src/rhino/rhino-all/build/libs/rhino-all-1.8.0.jar
 
 rm -f tmptest.$$
 
