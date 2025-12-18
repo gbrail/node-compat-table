@@ -220,6 +220,10 @@
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-template-literals",
       "code": "function strings(array) {\n  return array;\n}\nfunction getStrings() {\n  return strings`foo`;\n}\nvar original = getStrings();\nvar newed = new getStrings();\nreturn original === getStrings() && original === newed;"
     },
+    "syntax›template literals›arbitrary escape sequences in tagged template literals": {
+      "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-template-literals",
+      "code": "function strings(array) {\n  return array;\n}\nvar str = strings`\\1\\xz\\uz\\u{110000}\\u{z}`;\nreturn str.length === 1 && str[0] === undefined && str.raw.length === 1 && str.raw[0]===\"\\\\1\\\\xz\\\\uz\\\\u{110000}\\\\u{z}\""
+    },
     "syntax›RegExp \"y\" and \"u\" flags›\"y\" flag": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-get-regexp.prototype.sticky",
       "code": "var re = new RegExp('\\\\w', 'y');\nre.exec('xy');\nreturn (re.exec('xy')[0] === 'y');"
@@ -2382,7 +2386,7 @@
     },
     "misc›Proxy, internal 'get' calls›RegExp.prototype[Symbol.match]": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots",
-      "code": "// RegExp.prototype[Symbol.match] -> Get -> [[Get]]\nvar get = [];\nvar p = new Proxy({ exec: function() { return null; } }, { get: function(o, k) { get.push(k); return o[k]; }});\nRegExp.prototype[Symbol.match].call(p);\np.global = true;\nRegExp.prototype[Symbol.match].call(p);\nvar str = get + '';\nreturn str === \"global,exec,global,unicode,exec\" || str === 'flags,exec,flags,exec';"
+      "code": "// RegExp.prototype[Symbol.match] -> Get -> [[Get]]\nvar get = [];\nvar p = new Proxy({ exec: function() { return null; } }, { get: function(o, k) { get.push(k); return o[k]; }});\nRegExp.prototype[Symbol.match].call(p);\np.global = true;\np.unicode = true;\nRegExp.prototype[Symbol.match].call(p);\nvar str = get + '';\nreturn str === \"global,exec,global,unicode,exec\" || str === 'flags,exec,flags,exec';"
     },
     "misc›Proxy, internal 'get' calls›RegExp.prototype[Symbol.replace]": {
       "spec": "http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots",
@@ -2800,7 +2804,7 @@
     },
     "features›exponentiation (**) operator›early syntax error for unary negation without parens": {
       "spec": "http://www.ecma-international.org/ecma-262/7.0/index.html#sec-exp-operator",
-      "code": "if (2 ** 3 !== 8) { return false; }\ntry {\n  Function (\"-5 ** 2\")();\n} catch (e) {\n  return true;\n}"
+      "code": "if (2 ** 3 !== 8) {\n  return false;\n}\ntry {\n  Function(\"-5 ** 2\")();\n} catch (e) {\n  return true;\n}"
     },
     "features›Array.prototype.includes›Array.prototype.includes": {
       "spec": "http://www.ecma-international.org/ecma-262/7.0/index.html#sec-array.prototype.includes",
@@ -2828,7 +2832,7 @@
     },
     "misc›strict fn w/ non-strict non-simple params is error": {
       "spec": "http://www.ecma-international.org/ecma-262/7.0/index.html#sec-functiondeclarationinstantiation",
-      "code": "function foo(...a) {}\ntry {\n  Function (\"function bar(...a) {'use strict';}\")();\n} catch (e) {\nreturn true;\n}"
+      "code": "function foo(...a) {}\n  try {\n    Function(\"function bar(...a) {'use strict';}\")();\n  } catch (e) {\n    return true;\n  }"
     },
     "misc›nested rest destructuring, declarations": {
       "spec": "http://www.ecma-international.org/ecma-262/7.0/index.html#sec-destructuring-assignment",
@@ -2890,7 +2894,7 @@
     },
     "features›async functions›no line break between async and function": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
-      "code": "async function a() {}\ntry { Function (\"async\\n function a() {await 0}\")(); } catch (e) { return true; }"
+      "code": "async function a() {}\n  try {\n    Function(\"async\\n function a() {await 0}\")();\n  } catch (e) {\n    return true;\n  }"
     },
     "features›async functions›no \"prototype\" property": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
@@ -2906,7 +2910,7 @@
     },
     "features›async functions›must await a value": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
-      "code": "async function a() { await Promise.resolve(); }\ntry { Function (\"(async function a() { await; }())\")(); } catch (e) { return true; }"
+      "code": "async function a() {\n  await Promise.resolve();\n}\ntry {\n  Function(\"(async function a() { await; }())\")();\n} catch (e) {\n  return true;\n}"
     },
     "features›async functions›can await non-Promise values": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
@@ -2914,7 +2918,7 @@
     },
     "features›async functions›cannot await in parameters": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
-      "code": "async function a() { await Promise.resolve(); }\ntry { Function (\"(async function a(b = await Promise.resolve()) {}())\")(); } catch (e) { return true; }"
+      "code": "async function a() {\n  await Promise.resolve();\n}\ntry {\n  Function(\"(async function a(b = await Promise.resolve()) {}())\")();\n} catch (e) {\n  return true;\n}"
     },
     "features›async functions›async methods, object literals": {
       "spec": "https://tc39.github.io/ecma262/#sec-async-function-definitions",
@@ -3157,6 +3161,10 @@
       "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
       "code": "return /\\p{Script=Todhri}/u.test(\"\\u{105c0}\") && /\\p{Emoji}/u.test(\"🫩\");"
     },
+    "features›RegExp Unicode Property Escapes›Unicode 17.0": {
+      "spec": "https://github.com/tc39/proposal-regexp-unicode-property-escapes",
+      "code": "return /\\p{Script=Sidetic}/u.test(\"\\u{10940}\") && /\\p{Emoji}/u.test(\"🫍\");"
+    },
     "features›Asynchronous Iterators›async generators": {
       "spec": "https://github.com/tc39/proposal-async-iteration",
       "code": "async function*generator() {\n  yield 42;\n}\n\nvar iterator = generator();\niterator.next().then(function (step) {\n  if(iterator[Symbol.asyncIterator]() === iterator && step.done === false && step.value === 42)asyncTestPassed();\n});"
@@ -3233,7 +3241,7 @@
     },
     "misc›Function.prototype.toString revision›functions created with the Function constructor": {
       "spec": "https://github.com/tc39/Function-prototype-toString-revision",
-      "code": "var fn = function ('a', ' /\\x2A a \\x2A/ b, c /\\x2A b \\x2A/ //', '/\\x2A c \\x2A/ ; /\\x2A d \\x2A/ //');\nvar str = 'function anonymous(a, /\\x2A a \\x2A/ b, c /\\x2A b \\x2A/ //\\n) {\\n/\\x2A c \\x2A/ ; /\\x2A d \\x2A/ //\\n}';\nreturn fn + '' === str;"
+      "code": "var fn = Function('a', ' /\\x2A a \\x2A/ b, c /\\x2A b \\x2A/ //', '/\\x2A c \\x2A/ ; /\\x2A d \\x2A/ //');\nvar str = 'function anonymous(a, /\\x2A a \\x2A/ b, c /\\x2A b \\x2A/ //\\n) {\\n/\\x2A c \\x2A/ ; /\\x2A d \\x2A/ //\\n}';\nreturn fn + '' === str;"
     },
     "misc›Function.prototype.toString revision›arrows": {
       "spec": "https://github.com/tc39/Function-prototype-toString-revision",
@@ -3319,11 +3327,11 @@
     },
     "features›globalThis›\"globalThis\" global property is global object": {
       "spec": "https://github.com/tc39/proposal-global",
-      "code": "var actualGlobal = Function ('return this')();\nactualGlobal.__system_global_test__ = 42;\nreturn typeof globalThis === 'object' && globalThis && globalThis === actualGlobal && !globalThis.lacksGlobalThis && globalThis.__system_global_test__ === 42;"
+      "code": "var actualGlobal = Function('return this')();\nactualGlobal.__system_global_test__ = 42;\nreturn typeof globalThis === 'object' && globalThis && globalThis === actualGlobal && !globalThis.lacksGlobalThis && globalThis.__system_global_test__ === 42;"
     },
     "features›globalThis›\"globalThis\" global property has correct property descriptor": {
       "spec": "https://github.com/tc39/proposal-global",
-      "code": "var actualGlobal = Function ('return this')();\nif (typeof globalThis !== 'object') { return false; }\nif (!('globalThis' in actualGlobal)) { return false; }\nif (Object.prototype.propertyIsEnumerable.call(actualGlobal, 'globalThis')) { return false; }\n\nvar descriptor = Object.getOwnPropertyDescriptor(actualGlobal, 'globalThis');\nreturn descriptor.value === actualGlobal && !descriptor.enumerable && descriptor.configurable && descriptor.writable;"
+      "code": "var actualGlobal = Function('return this')();\nif (typeof globalThis !== 'object') { return false; }\nif (!('globalThis' in actualGlobal)) { return false; }\nif (Object.prototype.propertyIsEnumerable.call(actualGlobal, 'globalThis')) { return false; }\n\nvar descriptor = Object.getOwnPropertyDescriptor(actualGlobal, 'globalThis');\nreturn descriptor.value === actualGlobal && !descriptor.enumerable && descriptor.configurable && descriptor.writable;"
     },
     "features›optional chaining operator (?.)›optional property access": {
       "spec": "https://github.com/tc39/proposal-optional-chaining",
@@ -3571,7 +3579,7 @@
     },
     "features›RegExp Match Indices (`hasIndices` / `d` flag)›shows up in flags": {
       "spec": "https://github.com/tc39/proposal-regexp-match-indices",
-      "code": "var expected = ['hasIndices'];\n// Sorted alphabetically by shortname – \"dgimsuy\".\nif ('global' in RegExp.prototype) expected.push('global');\nif ('ignoreCase' in RegExp.prototype) expected.push('ignoreCase');\nif ('multiline' in RegExp.prototype) expected.push('multiline');\nif ('dotAll' in RegExp.prototype) expected.push('dotAll');\nif ('unicode' in RegExp.prototype) expected.push('unicode');\nif ('sticky' in RegExp.prototype) expected.push('sticky');\nvar actual = [];\nvar p = new Proxy({}, { get: function (o, k) { actual.push(k); return o[k]; }});\nObject.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get.call(p);\nif (expected.length !== actual.length) return false;\nfor (var i = 0; i < expected.length; i++) {\n  if (expected[i] !== actual[i]) return false;\n}\nreturn true;"
+      "code": "var expected = ['hasIndices'];\n// Sorted alphabetically by shortname as of ES2022 – \"dgimsuy\".\n// Any flags introduced after ES2022 will be ignored by this test.\nif ('global' in RegExp.prototype) expected.push('global');\nif ('ignoreCase' in RegExp.prototype) expected.push('ignoreCase');\nif ('multiline' in RegExp.prototype) expected.push('multiline');\nif ('dotAll' in RegExp.prototype) expected.push('dotAll');\nif ('unicode' in RegExp.prototype) expected.push('unicode');\nif ('sticky' in RegExp.prototype) expected.push('sticky');\nvar actual = [];\nvar p = new Proxy({}, { get: function (o, k) { actual.push(k); return o[k]; }});\nObject.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get.call(p);\nvar i = 0;\nfor (var j = 0; i < expected.length && j < actual.length; i++, j++) {\n  if (expected[i] !== actual[j]) j++;\n}\nreturn i === expected.length;"
     }
   },
   "ES2023": {
@@ -3640,6 +3648,10 @@
     "features›RegExp `v` flag›Unicode 16.0": {
       "spec": "https://github.com/tc39/proposal-regexp-v-flag",
       "code": "return /^\\p{RGI_Emoji}$/v.test(\"🇨🇶\");"
+    },
+    "features›RegExp `v` flag›Unicode 17.0": {
+      "spec": "https://github.com/tc39/proposal-regexp-v-flag",
+      "code": "return /^\\p{RGI_Emoji}$/v.test(\"🧑‍🩰‍🏽\");"
     },
     "features›ArrayBuffer.prototype.transfer›ArrayBuffer.prototype.transfer()": {
       "spec": "https://github.com/tc39/proposal-arraybuffer-transfer",
@@ -3777,7 +3789,11 @@
     },
     "features›Promise.try": {
       "spec": "https://github.com/tc39/proposal-promise-try",
-      "code": "var called = false;\nvar argsMatch = false;\nvar p = Promise.try(function () { called = true; })\nvar p2 = Promise.try(function () {\n  'use strict';\n  argsMatch = this === undefined && arguments.length === 2 && args[0] === p && args[1] === 2;\n}, [p, 2]);\n\nreturn p instanceof Promise && called && argsMatch;"
+      "code": "if (!('try' in Promise)) {\n  return false;\n}\nvar called = false;\nvar argsMatch = false;\nvar p = Promise.try(function () { called = true; })\nvar p2 = Promise.try(function () {\n  'use strict';\n  argsMatch = this === undefined && arguments.length === 2 && arguments[0] === p && arguments[1] === 2;\n}, p, 2);\n\nif (!(p instanceof Promise) || !(p2 instanceof Promise)) {\n  return false;\n}\n\np2.then(function () {\n  if (!called || !argsMatch) {\n    return;\n  }\n  asyncTestPassed();\n});"
+    },
+    "features›RegExp Escaping": {
+      "spec": "https://github.com/tc39/proposal-regex-escaping",
+      "code": "return RegExp.escape(\"The Quick Brown Fox\") === \"\\\\x54he\\\\x20Quick\\\\x20Brown\\\\x20Fox\" &&\n  RegExp.escape(\"(*.*)\") === \"\\\\(\\\\*\\\\.\\\\*\\\\)\" &&\n  RegExp.escape(\"｡^･ｪ･^｡\") === \"｡\\\\^･ｪ･\\\\^｡\" &&\n  RegExp.escape(\"\\\\d \\\\D (?:)\") === \"\\\\\\\\d\\\\x20\\\\\\\\D\\\\x20\\\\(\\\\?\\\\x3a\\\\)\";"
     }
   },
   "ESNEXT": {
@@ -3792,10 +3808,6 @@
     "Stage 3›Legacy RegExp features in JavaScript›RegExp.$1-$9": {
       "spec": "https://github.com/tc39/proposal-regexp-legacy-features",
       "code": "for (var i = 1; i < 10; i++) {\n  if (!(('$' + i) in RegExp)) return false;\n}\nreturn true;"
-    },
-    "Stage 3›RegExp Escaping": {
-      "spec": "https://github.com/tc39/proposal-regex-escaping",
-      "code": "return RegExp.escape(\"The Quick Brown Fox\") === \"The\\\\ Quick\\\\ Brown\\\\ Fox\" &&\n  RegExp.escape(\"(*.*)\") === \"\\\\(\\\\*\\\\.\\\\*\\\\)\" &&\n  RegExp.escape(\"｡^･ｪ･^｡\") === \"｡\\\\^･ｪ･\\\\^｡\" &&\n  RegExp.escape(\"\\\\d \\\\D (?:)\") === \"\\\\\\\\d \\\\\\\\D \\\\(\\\\?\\\\:\\\\)\";"
     },
     "Stage 3›Uint8Array to/from base64 and hex›Uint8Array.toBase64()": {
       "spec": "https://github.com/tc39/proposal-arraybuffer-base64",
@@ -3821,9 +3833,45 @@
       "spec": "https://github.com/tc39/proposal-arraybuffer-base64",
       "code": "const arr1 = new Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100]);\nlet arr2 = new Uint8Array(16);\nlet { read, written } = arr2.setFromHex(\"48656c6c6f20576f726c64\");\nreturn read == 22 && written == 11 &&\n       arr1.every((element, index) => element === arr2[index]);"
     },
+    "Stage 3›Explicit Resource Management›using": {
+      "spec": "https://github.com/tc39/proposal-explicit-resource-management",
+      "code": "var resource = {\n  disposed: false,\n  [Symbol.dispose]() {\n    this.disposed = true;\n  }\n};\n{\n  using _ = resource;\n}\nreturn resource.disposed"
+    },
+    "Stage 3›Explicit Resource Management›for (using ... of": {
+      "spec": "https://github.com/tc39/proposal-explicit-resource-management",
+      "code": "var resource1 = {\n  disposed: false,\n  [Symbol.dispose]() {\n    this.disposed = true;\n  }\n};\nvar resource2 = {\n  disposed: false,\n  [Symbol.dispose]() {\n    this.disposed = true;\n  }\n};\n{\n  for (using _ of [resource1, resource2]);\n}\nreturn resource1.disposed && resource2.disposed;"
+    },
+    "Stage 3›Explicit Resource Management›await using": {
+      "spec": "https://github.com/tc39/proposal-explicit-resource-management",
+      "code": "(async function () {\n  var resource = {\n    disposed: false,\n    async [Symbol.asyncDispose]() {\n      this.disposed = true;\n    }\n  };\n  {\n    await using _ = resource;\n  }\n  return resource.disposed && asyncTestPassed();\n}());"
+    },
+    "Stage 3›Explicit Resource Management›for (await using ... of": {
+      "spec": "https://github.com/tc39/proposal-explicit-resource-management",
+      "code": "var resource1 = {\n  disposed: false,\n  async [Symbol.asyncDispose]() {\n    this.disposed = true;\n  }\n};\nvar resource2 = {\n  disposed: false,\n  async [Symbol.asyncDispose]() {\n    this.disposed = true;\n  }\n};\n(async function () {\n  for (await using _ of [resource1, resource2]);\n  return resource1.disposed && resource2.disposed && asyncTestPassed();\n}());"
+    },
+    "Stage 3›Explicit Resource Management›SuppressedError": {
+      "spec": "https://github.com/tc39/proposal-explicit-resource-management",
+      "code": "var err1 = new Error();\nvar err2 = new Error();\nvar err3 = new Error();\ntry {\n  using _1 = { [Symbol.dispose]() { throw err1 } },\n        _2 = { [Symbol.dispose]() { throw err2 } };\n  throw err3;\n} catch (e) {\n  return (\n    e instanceof SuppressedError\n    && e.error === err1\n    && e.suppressed instanceof SuppressedError\n    && e.suppressed.error === err2\n    && e.suppressed.suppressed === err3\n  );\n}"
+    },
+    "Stage 3›Explicit Resource Management›DisposableStack": {
+      "spec": "https://github.com/tc39/proposal-explicit-resource-management",
+      "code": "var stack1 = new DisposableStack();\nvar resource1 = { disposed: false };\nvar resource2 = { disposed: false };\nvar resource3 = { disposed: false, [Symbol.dispose]() { this.disposed = true } };\nvar adopted = stack1.adopt(resource1, function (r) { r.disposed = true });\nvar deferred = stack1.defer(function (r) { resource2.disposed = true });\nvar stack2 = stack1.move();\nvar used = stack2.use(resource3);\nstack2.dispose();\nreturn (\n  resource1.disposed && adopted === resource1\n  && resource2.disposed && deferred === undefined\n  && resource3.disposed && used === resource3\n);"
+    },
+    "Stage 3›Explicit Resource Management›AsyncDisposableStack": {
+      "spec": "https://github.com/tc39/proposal-explicit-resource-management",
+      "code": "var stack1 = new AsyncDisposableStack();\nvar resource1 = { disposed: false };\nvar resource2 = { disposed: false };\nvar resource3 = { disposed: false, async [Symbol.asyncDispose]() { this.disposed = true } };\nvar adopted = stack1.adopt(resource1, async function (r) { r.disposed = true });\nvar deferred = stack1.defer(async function (r) { resource2.disposed = true });\nvar stack2 = stack1.move();\nvar used = stack2.use(resource3);\nstack2.disposeAsync().then(function () {\n  resource1.disposed && adopted === resource1 &&\n  resource2.disposed && deferred === undefined &&\n  resource3.disposed && used === resource3 &&\n  asyncTestPassed();\n});"
+    },
     "Stage 2.7›ShadowRealm": {
       "spec": "https://github.com/tc39/proposal-shadowrealm",
       "code": "return typeof ShadowRealm === \"function\"\n  && [\"evaluate\", \"importValue\"].every(function(key){\n    return key in ShadowRealm.prototype;\n  });"
+    },
+    "Stage 2.7›Map.prototype.upsert›Map.prototype.upsert": {
+      "spec": "https://github.com/tc39/proposal-upsert",
+      "code": "const map = new Map([['a', 1]]);\nif (map.upsert('a', it => 2, () => 3) !== 2) return false;\nif (map.upsert('b', it => 2, () => 3) !== 3) return false;\nreturn Array.from(map).join() === 'a,2,b,3';"
+    },
+    "Stage 2.7›Map.prototype.upsert›WeakMap.prototype.upsert": {
+      "spec": "https://github.com/tc39/proposal-upsert",
+      "code": "const a = {}, b = {};\nconst map = new WeakMap([[a, 1]]);\nif (map.upsert(a, it => 2, () => 3) !== 2) return false;\nif (map.upsert(b, it => 2, () => 3) !== 3) return false;\nreturn map.get(a) === 2 && map.get(b) === 3;"
     },
     "Stage 2›Generator function.sent Meta Property": {
       "spec": "https://github.com/tc39/proposal-function.sent",
@@ -3844,14 +3892,6 @@
     "Stage 2›throw expressions›conditionals": {
       "spec": "https://github.com/tc39/proposal-throw-expressions",
       "code": "true ? 42 : throw 21;\ntry {\n  false ? 42 : throw 21;\n} catch (e) {\n  return e === 21;\n}"
-    },
-    "Stage 2›Map.prototype.upsert›Map.prototype.upsert": {
-      "spec": "https://github.com/tc39/proposal-upsert",
-      "code": "const map = new Map([['a', 1]]);\nif (map.upsert('a', it => 2, () => 3) !== 2) return false;\nif (map.upsert('b', it => 2, () => 3) !== 3) return false;\nreturn Array.from(map).join() === 'a,2,b,3';"
-    },
-    "Stage 2›Map.prototype.upsert›WeakMap.prototype.upsert": {
-      "spec": "https://github.com/tc39/proposal-upsert",
-      "code": "const a = {}, b = {};\nconst map = new WeakMap([[a, 1]]);\nif (map.upsert(a, it => 2, () => 3) !== 2) return false;\nif (map.upsert(b, it => 2, () => 3) !== 3) return false;\nreturn map.get(a) === 2 && map.get(b) === 3;"
     },
     "Stage 2›Array.isTemplateObject": {
       "spec": "https://github.com/tc39/proposal-array-is-template-object",

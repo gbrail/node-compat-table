@@ -9,9 +9,9 @@
 # 4) Edit "rhinoversions.js" to add your new version to the list
 # 5) Run this script!
 
-rhinoJar=~/src/rhino/rhino-all/build/libs/rhino-all-1.7.16-SNAPSHOT.jar
-rhinoVersion=1.7.14
-supportVersion=14
+rhinoJar=~/src/rhino/rhino-all/build/libs/rhino-all-1.8.2-SNAPSHOT.jar
+rhinoVersion=1.8.2
+supportVersion=20
 
 curl https://raw.githubusercontent.com/kangax/compat-table/gh-pages/data-es6.js > data-es6.js
 curl https://raw.githubusercontent.com/kangax/compat-table/gh-pages/data-es2016plus.js > data-es2016plus.js
@@ -27,7 +27,9 @@ node testers.js > testers.json
 echo "supportVersion=${supportVersion}; load('rhinotest.js');" > tmptest.$$
 
 echo 'Running test...'
-java -jar ${rhinoJar} -version 0 -debug tmptest.$$ > rhino-results/${rhinoVersion}.json
+#java -jar ${rhinoJar} -version 0 -debug tmptest.$$ > rhino-results/${rhinoVersion}.json
+#java -jar ${rhinoJar} -version 200 -debug tmptest.$$ > rhino-results/${rhinoVersion}-es6.json
+
 java -jar ${rhinoJar} -version 200 -debug tmptest.$$ > rhino-results/${rhinoVersion}-es6.json
 
 rm -f tmptest.$$

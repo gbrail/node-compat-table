@@ -30,7 +30,7 @@ runTests() {
     echo "supportVersion=${supportVersion}; load('obsoleterhinotest.js');" > tmptest.$$
   fi
   java -jar ${jar} -version 0 tmptest.$$ > rhino-results/${version}.json
-  if [ ${supportVersion} -gt 5 ]
+  if [ ${supportVersion} -gt 5 -a ${supportVersion} -lt 20 ]
   then
     echo "Testing ${version} -version 200"
     java -jar ${jar} -version 200 tmptest.$$ > rhino-results/${version}-es6.json
@@ -42,27 +42,30 @@ fetchAndRunUrl() {
   rhinoVersion=$2
   url=$3
 
-  fn=rhino-${version}.jar
-  if [ ! -f ./jars/${fn} ]
+  if [ ${rhinoVersion} -ge 80 ]
+  then
+    fn=./jars/rhino-all-${version}.jar
+  else
+    fn=./jars/rhino-${version}.jar
+  fi
+  if [ ! -f ${fn} ]
   then
     echo "Fetching ${version}"...
     (cd jars; wget ${url})
   fi
   
-  runTests ${version} ${rhinoVersion} ./jars/${fn}
+  runTests ${version} ${rhinoVersion} ${fn}
 }
 
 fetchAndRunUrl 1.7R4 4 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7R4/rhino-1.7R4.jar
 fetchAndRunUrl 1.7R5 5 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7R5/rhino-1.7R5.jar
-fetchAndRunUrl 1.7.7.2 7 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.7.2/rhino-1.7.7.2.jar
 fetchAndRunUrl 1.7.10 10 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.10/rhino-1.7.10.jar
-fetchAndRunUrl 1.7.11 11 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.11/rhino-1.7.11.jar
 fetchAndRunUrl 1.7.12 12 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.12/rhino-1.7.12.jar
-fetchAndRunUrl 1.7.13 13 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.13/rhino-1.7.13.jar
 fetchAndRunUrl 1.7.14 14 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.14/rhino-1.7.14.jar
 fetchAndRunUrl 1.7.15 15 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.15/rhino-1.7.15.jar
+fetchAndRunUrl 1.8.0 80 https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar
 
-runTests 1.7.16 16 ~/src/rhino/rhino-all/build/libs/rhino-all-1.7.16-SNAPSHOT.jar
+#runTests 1.8.0 20 ~/src/rhino/rhino-all/build/libs/rhino-all-1.8.0.jar
 
 rm -f tmptest.$$
 
