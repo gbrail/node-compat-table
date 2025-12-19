@@ -65,7 +65,7 @@ fetchAndRunUrl 1.7.14 14 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.14
 fetchAndRunUrl 1.7.15 15 https://repo1.maven.org/maven2/org/mozilla/rhino/1.7.15/rhino-1.7.15.jar
 fetchAndRunUrl 1.8.0 80 https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar
 
-#runTests 1.8.2 22 ~/src/rhino/rhino-all/build/libs/rhino-all-1.8.2-SNAPSHOT.jar
+runTests 1.8.2 22 ~/src/rhino/rhino-all/build/libs/rhino-all-1.8.2-SNAPSHOT.jar
 
 rm -f tmptest.$$
 

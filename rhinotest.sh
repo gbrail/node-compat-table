@@ -30,7 +30,7 @@ echo 'Running test...'
 #java -jar ${rhinoJar} -version 0 -debug tmptest.$$ > rhino-results/${rhinoVersion}.json
 #java -jar ${rhinoJar} -version 200 -debug tmptest.$$ > rhino-results/${rhinoVersion}-es6.json
 
-java -jar ${rhinoJar} -version 200 -debug tmptest.$$ > rhino-results/${rhinoVersion}-es6.json
+java -jar ${rhinoJar} tmptest.$$ > rhino-results/${rhinoVersion}.json
 
 rm -f tmptest.$$
 
